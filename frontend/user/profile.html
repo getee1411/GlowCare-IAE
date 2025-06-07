@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlowCare - User Profile</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column; /* Allow content to stack vertically */
+            justify-content: flex-start; /* Align content to top */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        /* Navbar (Sama seperti landing_page.html) */
+        .navbar {
+            background-color: #007bff;
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%; /* Full width */
+            box-sizing: border-box;
+        }
+        .navbar .brand {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+        .navbar .nav-links button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-left: 10px; /* Space between buttons */
+        }
+        .navbar .nav-links button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        .navbar .nav-links button:active {
+            transform: translateY(0);
+        }
+
+        /* Container & Card */
+        .card {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+            margin-top: 30px; /* Space from navbar */
+            margin-bottom: 30px; /* Space at bottom */
+        }
+
+        /* Headings */
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Profile Info & Inline Editing */
+        .profile-info {
+            margin-bottom: 30px;
+        }
+
+        .profile-info p {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            display: flex; /* Use flex for alignment */
+            align-items: center;
+        }
+
+        .profile-info strong {
+            display: inline-block;
+            width: 140px;
+            color: #555;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .editable-field {
+            flex-grow: 1; /* Allow content to take remaining space */
+            padding: 5px 10px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            min-height: 20px; /* Ensure clickable area */
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .editable-field:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .editable-field.editing {
+            cursor: text;
+            background-color: #fff;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .editable-field input {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            border: none;
+            outline: none;
+            font-size: 1em;
+            font-family: inherit;
+            background: transparent;
+        }
+        
+        .editable-field button {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .editable-field button:hover {
+            background-color: #218838;
+        }
+        .editable-field button.cancel {
+            background-color: #6c757d;
+        }
+        .editable-field button.cancel:hover {
+            background-color: #5a6268;
+        }
+
+        /* Messages */
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .message.error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.success {
+            color: #28a745;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.warning {
+            color: #ffc107;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="landing_page.html" class="brand">GlowCare</a>
+        <div class="nav-links">
+            <button id="profileButton">Profil</button>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h1>User Profile</h1>
+
+        <div class="profile-info">
+            <p><strong>Username:</strong> <span id="profileUsername">Loading...</span></p>
+            <p><strong>Role:</strong> <span id="profileRole">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+            <p><strong>Address:</strong> 
+                <span id="profileAddress" class="editable-field" data-field="address">Loading...</span>
+            </p>
+            <p><strong>Phone No.:</strong> 
+                <span id="profilePhone" class="editable-field" data-field="phone_number">Loading...</span>
+            </p>
+        </div>
+
+        <div id="statusMessage" class="message"></div>
+    </div>
+
+    <script>
+        // *** PENTING: Sesuaikan URL ini dengan alamat User Service Flask Anda ***
+        const API_BASE_URL = 'http://127.0.0.1:5001/api';
+
+        const token = localStorage.getItem('jwt_token');
+        const profileUsername = document.getElementById('profileUsername');
+        const profileRole = document.getElementById('profileRole');
+        const profileEmail = document.getElementById('profileEmail');
+        const profileAddress = document.getElementById('profileAddress');
+        const profilePhone = document.getElementById('profilePhone');
+        const statusMessageDiv = document.getElementById('statusMessage');
+        const logoutButton = document.getElementById('logoutButton');
+        const profileButton = document.getElementById('profileButton'); // For navbar
+
+        // Ensure user is logged in
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // --- Navbar Button Handlers ---
+        profileButton.addEventListener('click', () => {
+            window.location.href = 'profile.html'; // Already on profile, can be just a reload or no-op
+        });
+
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('jwt_token');
+            window.location.href = 'login.html';
+        });
+        // --- End Navbar Button Handlers ---
+
+
+        async function fetchProfile() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    profileUsername.textContent = data.profile.username;
+                    profileRole.textContent = data.profile.role;
+                    profileEmail.textContent = data.profile.email; 
+                    profileAddress.textContent = data.profile.address || 'Click to set address';
+                    profilePhone.textContent = data.profile.phone_number || 'Click to set phone number';
+
+                    // Store original values for potential cancel
+                    profileAddress.dataset.originalValue = data.profile.address || '';
+                    profilePhone.dataset.originalValue = data.profile.phone_number || '';
+                } else {
+                    statusMessageDiv.className = 'message error';
+                    statusMessageDiv.textContent = data.message || 'Failed to load profile.';
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('jwt_token');
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 1500);
+                    }
+                }
+            } catch (error) {
+                statusMessageDiv.className = 'message error';
+                statusMessageDiv.textContent = 'Network error while loading profile. Please ensure backend is running.';
+                console.error('Error:', error);
+            }
+        }
+
+        async function updateProfileField(fieldElement, fieldName, newValue) {
+            const updateData = {};
+            updateData[fieldName] = newValue.trim() === '' ? null : newValue.trim(); // Send null if empty string
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/profile/edit`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusMessageDiv.className = 'message success';
+                    statusMessageDiv.textContent = data.message;
+                    // Update original value dataset
+                    fieldElement.dataset.originalValue = newValue.trim();
+                    // Update displayed text content, showing 'Not set' if null/empty
+                    fieldElement.textContent = newValue.trim() === '' ? `Click to set ${fieldName.replace('_', ' ')}` : newValue.trim();
+                } else {
+                    statusMessageDiv.className = 'message error';
+                    statusMessageDiv.textContent = data.message || `Failed to update ${fieldName}.`;
+                    // Revert to original value if update fails
+                    fieldElement.textContent = fieldElement.dataset.originalValue || `Click to set ${fieldName.replace('_', ' ')}`;
+                }
+            } catch (error) {
+                statusMessageDiv.className = 'message error';
+                statusMessageDiv.textContent = 'Network error while saving changes. Please ensure backend is running.';
+                console.error('Error:', error);
+                // Revert to original value on network error
+                fieldElement.textContent = fieldElement.dataset.originalValue || `Click to set ${fieldName.replace('_', ' ')}`;
+            } finally {
+                // Clear any buttons and input, return to display mode
+                fieldElement.innerHTML = fieldElement.textContent; // Clear input/buttons
+                fieldElement.classList.remove('editing');
+            }
+        }
+
+        document.querySelectorAll('.editable-field').forEach(fieldElement => {
+            fieldElement.addEventListener('click', function() {
+                if (this.classList.contains('editing')) {
+                    return; // Already in editing mode
+                }
+
+                this.classList.add('editing');
+                const fieldName = this.dataset.field;
+                const currentValue = this.dataset.originalValue || ''; // Get original value from dataset
+
+                this.innerHTML = `
+                    <input type="${fieldName === 'phone_number' ? 'tel' : 'text'}" value="${currentValue}" class="edit-input">
+                    <button class="save-button">Save</button>
+                    <button class="cancel-button cancel">Cancel</button>
+                `;
+                const inputElement = this.querySelector('.edit-input');
+                inputElement.focus();
+
+                this.querySelector('.save-button').addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent re-triggering parent click
+                    updateProfileField(this, fieldName, inputElement.value);
+                });
+
+                this.querySelector('.cancel-button').addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent re-triggering parent click
+                    this.innerHTML = this.dataset.originalValue || `Click to set ${fieldName.replace('_', ' ')}`;
+                    this.classList.remove('editing');
+                    statusMessageDiv.textContent = ''; // Clear status message on cancel
+                });
+
+                // Allow saving on Enter key press
+                inputElement.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Prevent form submission
+                        updateProfileField(this, fieldName, inputElement.value);
+                    }
+                });
+            });
+        });
+
+        // Initial fetch when page loads
+        fetchProfile(); 
+    </script>
+</body>
+</html>

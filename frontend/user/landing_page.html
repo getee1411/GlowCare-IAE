@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlowCare - Welcome</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .navbar {
+            background-color: #007bff;
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar .brand {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+        .navbar .nav-links button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .navbar .nav-links button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        .navbar .nav-links button:active {
+            transform: translateY(0);
+        }
+        .content {
+            padding: 50px 30px;
+            text-align: center;
+        }
+        .content h1 {
+            font-size: 3em;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .content p {
+            font-size: 1.2em;
+            color: #555;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="#" class="brand">GlowCare</a>
+        <div class="nav-links">
+            <button id="profileButton">Profil</button>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Selamat Datang di GlowCare!</h1>
+        <p>Aplikasi klinik kecantikan berbasis mikroservis yang aman dan skalabel.</p>
+        <p>Jelajahi layanan kami, atur janji temu, dan kelola profil Anda dengan mudah.</p>
+    </div>
+
+    <script>
+        const profileButton = document.getElementById('profileButton');
+        const logoutButton = document.getElementById('logoutButton');
+
+        // Memastikan token ada sebelum menampilkan halaman atau tombol fungsional
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+            // Jika tidak ada token, redirect ke halaman login
+            window.location.href = 'login.html';
+        }
+
+        profileButton.addEventListener('click', () => {
+            window.location.href = 'profile.html'; // Mengarahkan ke halaman profil
+        });
+
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('jwt_token'); // Hapus token dari localStorage
+            window.location.href = 'login.html'; // Kembali ke halaman login
+        });
+    </script>
+</body>
+</html>

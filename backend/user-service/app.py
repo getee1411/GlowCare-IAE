@@ -1,12 +1,17 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify # Hapus render_template
 from functools import wraps
 import jwt
 import datetime
 import pymysql.cursors
 import os
+from flask_cors import CORS # Tambahkan import CORS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'GlowCare'
+
+# Inisialisasi CORS. Izinkan semua origin (untuk pengembangan).
+# Untuk produksi, ganti "*" dengan daftar origin frontend Anda.
+CORS(app) 
 
 DB_CONFIG = {
     'host': '127.0.0.1',
@@ -60,8 +65,23 @@ def roles_required(roles):
         return decorated_function
     return decorator
 
-@app.route('/register', methods=['POST'])
-def register():
+# --- Hapus Endpoint untuk Menyajikan Halaman HTML ---
+# @app.route('/')
+# def login_page():
+#     return render_template('login.html')
+
+# @app.route('/register.html')
+# def register_page():
+#     return render_template('register.html')
+
+# @app.route('/profile.html')
+# def profile_page():
+#     return render_template('profile.html')
+
+# --- API ENDPOINTS (tetap dengan awalan /api/) ---
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -97,8 +117,8 @@ def register():
     finally:
         connection.close()
 
-@app.route('/login', methods=['POST'])
-def login():
+@app.route('/api/login', methods=['POST'])
+def api_login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -132,9 +152,9 @@ def login():
     finally:
         connection.close()
 
-@app.route('/profile', methods=['GET'])
+@app.route('/api/profile', methods=['GET'])
 @token_required
-def get_profile():
+def api_get_profile():
     user_id_from_token = request.user_data['user_id']
     
     connection = get_db_connection()
@@ -156,6 +176,7 @@ def get_profile():
             profile_data = {
                 "username": user_data['username'],
                 "role": user_data['role'],
+                "email": f"{user_data['username']}@example.com",
                 "address": user_data['address'],
                 "phone_number": user_data['phone_number']
             }
@@ -165,15 +186,15 @@ def get_profile():
     finally:
         connection.close()
 
-@app.route('/profile/edit', methods=['PUT'])
+@app.route('/api/profile/edit', methods=['PUT'])
 @token_required
-def edit_profile():
+def api_edit_profile():
     user_id_from_token = request.user_data['user_id']
     data = request.get_json()
 
     address = data.get('address')
     phone_number = data.get('phone_number')
-        
+    
     connection = get_db_connection()
     if connection is None:
         return jsonify({'message': 'Database connection error!'}), 500
@@ -209,10 +230,10 @@ def edit_profile():
     finally:
         connection.close()
 
-@app.route('/admin_data', methods=['GET'])
+@app.route('/api/admin_data', methods=['GET'])
 @token_required
 @roles_required(['admin'])
-def get_admin_data():
+def api_get_admin_data():
     return jsonify({'message': 'This is sensitive data for admins only!'})
 
 if __name__ == '__main__':
