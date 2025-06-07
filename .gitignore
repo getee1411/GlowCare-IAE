@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+*.env
+
+# Flask instance folder
+instance/
+
+# Pytest cache
+.pytest_cache/
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.bak
+*.swp
+*.tmp
+
+# Database files
+*.sqlite3
+*.db
+
+# Environment variables
+.env
+.env.*
+
+# Ignore system files
+.DS_Store
+Thumbs.db
