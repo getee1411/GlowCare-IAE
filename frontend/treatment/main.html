@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlowCare - Treatment Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const TreatmentList = () => {
+      const [treatments, setTreatments] = useState([]);
+      const [editId, setEditId] = useState(null);
+      const [editForm, setEditForm] = useState({ nama: '', nama_dokter: '', harga: '' });
+
+      useEffect(() => {
+        fetch('http://127.0.0.1:5000/treatments')
+          .then(res => res.json())
+          .then(data => {
+            // Pastikan data dalam format array
+            if (Array.isArray(data)) {
+              setTreatments(data);
+            } else {
+              setTreatments([data]); // Jika data bukan array, bungkus dalam array
+            }
+          })
+          .catch(error => console.error('Error fetching data:', error));
+      }, []);
+
+      const handleEdit = (treatment) => {
+        setEditId(treatment.id);
+        setEditForm({ nama: treatment.nama, nama_dokter: treatment.nama_dokter, harga: treatment.harga });
+      };
+
+      const handleInputChange = (e) => {
+        setEditForm({ ...editForm, [e.target.name]: e.target.value });
+      };
+
+      const saveEdit = (id) => {
+        fetch(`http://127.0.0.1:5000/treatments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editForm)
+        })
+          .then(res => res.json())
+          .then(() => {
+            setTreatments(treatments.map(t => t.id === id ? { ...t, ...editForm } : t));
+            setEditId(null);
+            setEditForm({ nama: '', nama_dokter: '', harga: '' });
+          })
+          .catch(error => console.error('Error updating data:', error));
+      };
+
+      return (
+        <div className="container mx-auto p-4">
+          <h1 className="text-3xl font-bold mb-4 text-green-700">Treatment List</h1>
+          <table className="w-full bg-white shadow-md rounded">
+            <thead>
+              <tr className="bg-green-500 text-white">
+                <th className="p-2">ID</th>
+                <th className="p-2">Nama</th>
+                <th className="p-2">Nama Dokter</th>
+                <th className="p-2">Harga</th>
+                <th className="p-2">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {treatments.length > 0 ? (
+                treatments.map(treatment => (
+                  <tr key={treatment.id} className="border-b">
+                    <td className="p-2">{treatment.id}</td>
+                    <td className="p-2">
+                      {editId === treatment.id ? (
+                        <input
+                          type="text"
+                          name="nama"
+                          value={editForm.nama}
+                          onChange={handleInputChange}
+                          className="p-1 w-full border rounded"
+                        />
+                      ) : (
+                        treatment.nama
+                      )}
+                    </td>
+                    <td className="p-2">
+                      {editId === treatment.id ? (
+                        <input
+                          type="text"
+                          name="nama_dokter"
+                          value={editForm.nama_dokter}
+                          onChange={handleInputChange}
+                          className="p-1 w-full border rounded"
+                        />
+                      ) : (
+                        treatment.nama_dokter
+                      )}
+                    </td>
+                    <td className="p-2">
+                      {editId === treatment.id ? (
+                        <input
+                          type="number"
+                          name="harga"
+                          value={editForm.harga}
+                          onChange={handleInputChange}
+                          className="p-1 w-full border rounded"
+                        />
+                      ) : (
+                        treatment.harga
+                      )}
+                    </td>
+                    <td className="p-2">
+                      {editId === treatment.id ? (
+                        <button onClick={() => saveEdit(treatment.id)} className="bg-blue-500 text-white p-1 rounded">Simpan</button>
+                      ) : (
+                        <button onClick={() => handleEdit(treatment)} className="bg-blue-500 text-white p-1 rounded">Edit</button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan="5" className="p-2 text-center">Loading...</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<TreatmentList />, document.getElementById('root'));
+  </script>
+</body>
+</html>
