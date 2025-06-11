@@ -215,66 +215,16 @@
     <script>
         // Treatment data
         const treatments = [
-            {
-                id: 1,
-                name: "Facial Glow Up",
-                doctor: "dr. Ayu Pratiwi",
-                price: "Rp 150.000"
-            },
-            {
-                id: 2,
-                name: "Chemical Peeling",
-                doctor: "dr. Rina Kartika",
-                price: "Rp 200.000"
-            },
-            {
-                id: 3,
-                name: "Microneedling",
-                doctor: "dr. Budi Santoso",
-                price: "Rp 300.000"
-            },
-            {
-                id: 4,
-                name: "Laser Rejuvenation",
-                doctor: "dr. Intan Permata",
-                price: "Rp 500.000"
-            },
-            {
-                id: 5,
-                name: "Botox Treatment",
-                doctor: "dr. Ahmad Yusuf",
-                price: "Rp 750.000"
-            },
-            {
-                id: 6,
-                name: "Filler Injection",
-                doctor: "dr. Clara Wijaya",
-                price: "Rp 850.000"
-            },
-            {
-                id: 7,
-                name: "Acne Treatment",
-                doctor: "dr. Rendy Prakoso",
-                price: "Rp 180.000"
-            },
-            {
-                id: 8,
-                name: "Whitening Infusion",
-                doctor: "dr. Sari Utami",
-                price: "Rp 250.000"
-            },
-            {
-                id: 9,
-                name: "Anti Aging Therapy",
-                doctor: "dr. Andika Putra",
-                price: "Rp 650.000"
-            },
-            {
-                id: 10,
-                name: "Hydra Facial",
-                doctor: "dr. Melinda Harun",
-                price: "Rp 275.000"
-            }
+            { id: 1, name: "Facial Glow Up", doctor: "dr. Ayu Pratiwi", price: "Rp 150.000" },
+            { id: 2, name: "Chemical Peeling", doctor: "dr. Rina Kartika", price: "Rp 200.000" },
+            { id: 3, name: "Microneedling", doctor: "dr. Budi Santoso", price: "Rp 300.000" },
+            { id: 4, name: "Laser Rejuvenation", doctor: "dr. Intan Permata", price: "Rp 500.000" },
+            { id: 5, name: "Botox Treatment", doctor: "dr. Ahmad Yusuf", price: "Rp 750.000" },
+            { id: 6, name: "Filler Injection", doctor: "dr. Clara Wijaya", price: "Rp 850.000" },
+            { id: 7, name: "Acne Treatment", doctor: "dr. Rendy Prakoso", price: "Rp 180.000" },
+            { id: 8, name: "Whitening Infusion", doctor: "dr. Sari Utami", price: "Rp 250.000" },
+            { id: 9, name: "Anti Aging Therapy", doctor: "dr. Andika Putra", price: "Rp 650.000" },
+            { id: 10, name: "Hydra Facial", doctor: "dr. Melinda Harun", price: "Rp 275.000" }
         ];
 
         // Initialize date picker
@@ -302,7 +252,7 @@
         }
 
         // Handle form submission
-        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const selectedTreatment = document.querySelector('.treatment-card.selected');
@@ -312,48 +262,45 @@
             }
 
             const treatmentId = selectedTreatment.dataset.id;
-            const treatment = treatments.find(t => t.id === parseInt(treatmentId));
-
             const booking = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                date: document.getElementById('date').value,
-                time: document.getElementById('time').value,
-                treatment: treatment.name,
-                doctor: treatment.doctor,
-                price: treatment.price,
+                user_id: document.getElementById('email').value,
+                treatment_id: treatmentId,
+                appointment_date: document.getElementById('date').value,
+                appointment_time: document.getElementById('time').value,
                 notes: document.getElementById('notes').value,
-                bookingDate: new Date().toISOString()
+                status: 'confirmed'
             };
 
-            // Save to booking history
-            const bookingHistory = JSON.parse(localStorage.getItem('bookingHistory')) || [];
-            bookingHistory.unshift(booking);
-            localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+            if (!booking.user_id || !booking.appointment_date || !booking.appointment_time || !booking.treatment_id) {
+                alert('Please fill all required fields');
+                return;
+            }
 
-            // Show success message
-            const successMessage = document.createElement('div');
-            successMessage.className = 'success-message';
-            successMessage.innerHTML = `
-                <i class="bi bi-check-circle"></i>
-                <h4>Booking Successful!</h4>
-                <p>Your appointment has been confirmed. We'll send you a confirmation email shortly.</p>
-                <p>Booking Details:</p>
-                <ul class="list-unstyled">
-                    <li>Treatment: ${booking.treatment}</li>
-                    <li>Date: ${booking.date}</li>
-                    <li>Time: ${booking.time}</li>
-                    <li>Doctor: ${booking.doctor}</li>
-                </ul>
-                <a href="dashboard.html" class="btn btn-primary mt-3">Payment</a>
-            `;
-            document.querySelector('.appointment-container').appendChild(successMessage);
-            successMessage.style.display = 'block';
+            try {
+                const response = await fetch('http://localhost:5003/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer dummy-token' // Replace with real token if needed
+                    },
+                    body: JSON.stringify(booking)
+                });
 
-            // Reset form
-            this.reset();
-            document.querySelectorAll('.treatment-card').forEach(card => card.classList.remove('selected'));
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Booking failed');
+                }
+
+                const data = await response.json();
+                const appointmentId = data.appointment.id;
+
+                // Save appointment ID and redirect to payment
+                localStorage.setItem('currentAppointmentId', appointmentId);
+                window.location.href = 'file:///D:/xampp/htdocs/TugasEAI/GlowCare-IAE/frontend/payment/main.html';
+            } catch (error) {
+                alert('Failed to book appointment. Please try again. Error: ' + error.message);
+                console.error('Error:', error);
+            }
         });
 
         // Handle treatment selection
@@ -369,4 +316,4 @@
         loadTreatments();
     </script>
 </body>
-</html> 
+</html>
