@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlowCare - Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+        }
+        
+        body {
+            background-color: var(--secondary-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .appointment-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .appointment-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        
+        .status-pending { background-color: #ffeaa7; color: #d35400; }
+        .status-confirmed { background-color: #55efc4; color: #00b894; }
+        .status-cancelled { background-color: #ff7675; color: #d63031; }
+        .status-completed { background-color: #74b9ff; color: #0984e3; }
+
+        .role-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+        }
+
+        .role-provider { background-color: #a29bfe; color: #6c5ce7; }
+        .role-consumer { background-color: #81ecec; color: #00cec9; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-spa text-primary"></i> GlowCare
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-calendar-alt"></i> Appointments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>My Appointments</h2>
+                <span id="userRole" class="role-badge"></span>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAppointmentModal">
+                <i class="fas fa-plus"></i> New Appointment
+            </button>
+        </div>
+
+        <!-- Appointments List -->
+        <div class="row" id="appointmentsList">
+            <!-- Appointment cards will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- New Appointment Modal -->
+    <div class="modal fade" id="newAppointmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Book New Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="appointmentForm">
+                        <div class="mb-3">
+                            <label class="form-label">Select Doctor</label>
+                            <select class="form-select" id="doctorSelect" required>
+                                <option value="">Choose a doctor...</option>
+                                <!-- Doctors will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Treatment</label>
+                            <select class="form-select" id="treatmentSelect" required>
+                                <option value="">Choose a treatment...</option>
+                                <!-- Treatments will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Appointment Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="appointmentDateTime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes (Optional)</label>
+                            <textarea class="form-control" id="appointmentNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createAppointment()">Book Appointment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get user role from token
+        function getUserRole() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.role;
+            }
+            return null;
+        }
+
+        // Update UI based on user role
+        function updateUIForRole() {
+            const role = getUserRole();
+            const roleBadge = document.getElementById('userRole');
+            
+            if (role === 'provider') {
+                roleBadge.textContent = 'Service Provider';
+                roleBadge.classList.add('role-provider');
+            } else if (role === 'consumer') {
+                roleBadge.textContent = 'Service Consumer';
+                roleBadge.classList.add('role-consumer');
+            }
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        // Function to get status badge class
+        function getStatusBadgeClass(status) {
+            const statusClasses = {
+                'pending': 'status-pending',
+                'confirmed': 'status-confirmed',
+                'cancelled': 'status-cancelled',
+                'completed': 'status-completed'
+            };
+            return statusClasses[status] || 'status-pending';
+        }
+
+        // Function to load appointments
+        async function loadAppointments() {
+            try {
+                const role = getUserRole();
+                let endpoint = 'http://localhost:5003/appointments';
+                
+                if (role === 'provider') {
+                    endpoint = 'http://localhost:5003/provider/appointments';
+                } else if (role === 'consumer') {
+                    endpoint = 'http://localhost:5003/consumer/appointments';
+                }
+
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const appointments = await response.json();
+                
+                const appointmentsList = document.getElementById('appointmentsList');
+                appointmentsList.innerHTML = '';
+                
+                appointments.forEach(appointment => {
+                    const card = `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="appointment-card p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="mb-0">Appointment #${appointment.id}</h5>
+                                    <span class="status-badge ${getStatusBadgeClass(appointment.status)}">
+                                        ${appointment.status}
+                                    </span>
+                                </div>
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                    ${formatDate(appointment.appointment_date)}
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-user-md text-primary"></i>
+                                    Doctor ID: ${appointment.doctor_id}
+                                </p>
+                                <p class="mb-3">
+                                    <i class="fas fa-procedures text-primary"></i>
+                                    Treatment ID: ${appointment.treatment_id}
+                                </p>
+                                ${appointment.notes ? `
+                                    <p class="mb-3">
+                                        <i class="fas fa-sticky-note text-primary"></i>
+                                        ${appointment.notes}
+                                    </p>
+                                ` : ''}
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="updateAppointment(${appointment.id})">
+                                        <i class="fas fa-edit"></i> Update
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="cancelAppointment(${appointment.id})">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    appointmentsList.innerHTML += card;
+                });
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                alert('Failed to load appointments. Please try again.');
+            }
+        }
+
+        // Function to create new appointment
+        async function createAppointment() {
+            const formData = {
+                doctor_id: document.getElementById('doctorSelect').value,
+                treatment_id: document.getElementById('treatmentSelect').value,
+                appointment_date: document.getElementById('appointmentDateTime').value,
+                notes: document.getElementById('appointmentNotes').value
+            };
+
+            const role = getUserRole();
+            if (role === 'provider') {
+                formData.provider_id = JSON.parse(atob(localStorage.getItem('token').split('.')[1])).id;
+            } else if (role === 'consumer') {
+                formData.consumer_id = JSON.parse(atob(localStorage.getItem('token').split('.')[1])).id;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5003/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('newAppointmentModal'));
+                    modal.hide();
+                    loadAppointments();
+                    alert('Appointment created successfully!');
+                } else {
+                    throw new Error('Failed to create appointment');
+                }
+            } catch (error) {
+                console.error('Error creating appointment:', error);
+                alert('Failed to create appointment. Please try again.');
+            }
+        }
+
+        // Function to update appointment
+        async function updateAppointment(appointmentId) {
+            // Implementation for updating appointment
+            alert('Update functionality to be implemented');
+        }
+
+        // Function to cancel appointment
+        async function cancelAppointment(appointmentId) {
+            if (confirm('Are you sure you want to cancel this appointment?')) {
+                try {
+                    const response = await fetch(`http://localhost:5003/appointments/${appointmentId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ status: 'cancelled' })
+                    });
+
+                    if (response.ok) {
+                        loadAppointments();
+                        alert('Appointment cancelled successfully!');
+                    } else {
+                        throw new Error('Failed to cancel appointment');
+                    }
+                } catch (error) {
+                    console.error('Error cancelling appointment:', error);
+                    alert('Failed to cancel appointment. Please try again.');
+                }
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUIForRole();
+            loadAppointments();
+        });
+    </script>
+</body>
+</html> 
