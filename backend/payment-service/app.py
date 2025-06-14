@@ -184,7 +184,7 @@ def process_payment(id):
         return jsonify({'message': 'Payment method is required'}), 400
     
     try:
-        # Simulate payment processing
+        # Simulasi proses payment 
         import uuid
         payment.status = 'completed'
         payment.payment_method = data['payment_method']
