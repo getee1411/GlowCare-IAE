@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlowCare - Book Your Appointment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #ff69b4;
+            --secondary-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .appointment-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 105, 180, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #ff1493;
+            border-color: #ff1493;
+        }
+
+        .treatment-card {
+            border: 2px solid #eee;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .treatment-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .treatment-card.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(255, 105, 180, 0.1);
+        }
+
+        .success-message {
+            display: none;
+            padding: 2rem;
+            margin-top: 1rem;
+            border-radius: 10px;
+            background-color: #d4edda;
+            color: #155724;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .success-message i {
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .success-message h4 {
+            margin-bottom: 1rem;
+            color: #28a745;
+        }
+
+        .success-message p {
+            margin-bottom: 1.5rem;
+            color: #155724;
+        }
+
+        .nav-link {
+            color: var(--primary-color);
+        }
+
+        .nav-link:hover {
+            color: #ff1493;
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loading-spinner i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="https://via.placeholder.com/150x50?text=GlowCare" alt="GlowCare Logo" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="appointment.html">
+                            <i class="bi bi-calendar-plus"></i> Book Appointment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-calendar-check"></i> View Appointments
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="appointment-container">
+            <h2 class="text-center mb-4">Book Your GlowCare Appointment</h2>
+            
+            <form id="appointmentForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="date" class="form-label">Preferred Date</label>
+                        <input type="text" class="form-control" id="date" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="time" class="form-label">Preferred Time</label>
+                    <select class="form-select" id="time" required>
+                        <option value="">Select a time</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="13:00">01:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select Treatment</label>
+                    <div id="treatments" class="row">
+                        <!-- Treatments will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Additional Notes</label>
+                    <textarea class="form-control" id="notes" rows="3"></textarea>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // Treatment data
+        const treatments = [
+            {
+                id: 1,
+                name: "Facial Glow Up",
+                doctor: "dr. Ayu Pratiwi",
+                price: "Rp 150.000"
+            },
+            {
+                id: 2,
+                name: "Chemical Peeling",
+                doctor: "dr. Rina Kartika",
+                price: "Rp 200.000"
+            },
+            {
+                id: 3,
+                name: "Microneedling",
+                doctor: "dr. Budi Santoso",
+                price: "Rp 300.000"
+            },
+            {
+                id: 4,
+                name: "Laser Rejuvenation",
+                doctor: "dr. Intan Permata",
+                price: "Rp 500.000"
+            },
+            {
+                id: 5,
+                name: "Botox Treatment",
+                doctor: "dr. Ahmad Yusuf",
+                price: "Rp 750.000"
+            },
+            {
+                id: 6,
+                name: "Filler Injection",
+                doctor: "dr. Clara Wijaya",
+                price: "Rp 850.000"
+            },
+            {
+                id: 7,
+                name: "Acne Treatment",
+                doctor: "dr. Rendy Prakoso",
+                price: "Rp 180.000"
+            },
+            {
+                id: 8,
+                name: "Whitening Infusion",
+                doctor: "dr. Sari Utami",
+                price: "Rp 250.000"
+            },
+            {
+                id: 9,
+                name: "Anti Aging Therapy",
+                doctor: "dr. Andika Putra",
+                price: "Rp 650.000"
+            },
+            {
+                id: 10,
+                name: "Hydra Facial",
+                doctor: "dr. Melinda Harun",
+                price: "Rp 275.000"
+            }
+        ];
+
+        // Initialize date picker
+        flatpickr("#date", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disableMobile: "true"
+        });
+
+        // Load treatments
+        function loadTreatments() {
+            const treatmentsContainer = document.getElementById('treatments');
+            treatments.forEach(treatment => {
+                const treatmentCard = document.createElement('div');
+                treatmentCard.className = 'col-md-6 mb-3';
+                treatmentCard.innerHTML = `
+                    <div class="treatment-card" data-id="${treatment.id}">
+                        <h5>${treatment.name}</h5>
+                        <p class="mb-1">Doctor: ${treatment.doctor}</p>
+                        <p class="mb-0">Price: ${treatment.price}</p>
+                    </div>
+                `;
+                treatmentsContainer.appendChild(treatmentCard);
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedTreatment = document.querySelector('.treatment-card.selected');
+            if (!selectedTreatment) {
+                alert('Please select a treatment');
+                return;
+            }
+
+            const treatmentId = selectedTreatment.dataset.id;
+            const treatment = treatments.find(t => t.id === parseInt(treatmentId));
+
+            const booking = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                treatment: treatment.name,
+                doctor: treatment.doctor,
+                price: treatment.price,
+                notes: document.getElementById('notes').value,
+                bookingDate: new Date().toISOString()
+            };
+
+            // Save to booking history
+            const bookingHistory = JSON.parse(localStorage.getItem('bookingHistory')) || [];
+            bookingHistory.unshift(booking);
+            localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.innerHTML = `
+                <i class="bi bi-check-circle"></i>
+                <h4>Booking Successful!</h4>
+                <p>Your appointment has been confirmed. We'll send you a confirmation email shortly.</p>
+                <p>Booking Details:</p>
+                <ul class="list-unstyled">
+                    <li>Treatment: ${booking.treatment}</li>
+                    <li>Date: ${booking.date}</li>
+                    <li>Time: ${booking.time}</li>
+                    <li>Doctor: ${booking.doctor}</li>
+                </ul>
+                <a href="dashboard.html" class="btn btn-primary mt-3">Payment</a>
+            `;
+            document.querySelector('.appointment-container').appendChild(successMessage);
+            successMessage.style.display = 'block';
+
+            // Reset form
+            this.reset();
+            document.querySelectorAll('.treatment-card').forEach(card => card.classList.remove('selected'));
+        });
+
+        // Handle treatment selection
+        document.getElementById('treatments').addEventListener('click', function(e) {
+            const treatmentCard = e.target.closest('.treatment-card');
+            if (treatmentCard) {
+                document.querySelectorAll('.treatment-card').forEach(card => card.classList.remove('selected'));
+                treatmentCard.classList.add('selected');
+            }
+        });
+
+        // Initialize
+        loadTreatments();
+    </script>
+</body>
+</html> 
